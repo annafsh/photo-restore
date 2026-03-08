@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.photorestore.data.repository.PhotoRepository
 import com.photorestore.domain.model.PhotoItem
 import com.photorestore.domain.model.RestoreResult
+import com.photorestore.domain.model.RestorationSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,11 +39,45 @@ class PhotoDetailViewModel @Inject constructor(private val repository: PhotoRepo
         }
     }
     
-    fun restorePhoto() {
+    fun quickRestore() {
         val p = _photo.value ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isRestoring = true) }
-            when (val result = repository.restorePhoto(p)) {
+            when (val result = repository.quickRestore(p)) {
+                is RestoreResult.Success -> {
+                    loadPhoto(p.id)
+                    _uiState.update { it.copy(isRestoring = false) }
+                }
+                is RestoreResult.Error -> {
+                    _uiState.update { it.copy(isRestoring = false, error = result.message) }
+                }
+                RestoreResult.Loading -> {}
+            }
+        }
+    }
+    
+    fun deepRestore() {
+        val p = _photo.value ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRestoring = true) }
+            when (val result = repository.deepRestore(p)) {
+                is RestoreResult.Success -> {
+                    loadPhoto(p.id)
+                    _uiState.update { it.copy(isRestoring = false) }
+                }
+                is RestoreResult.Error -> {
+                    _uiState.update { it.copy(isRestoring = false, error = result.message) }
+                }
+                RestoreResult.Loading -> {}
+            }
+        }
+    }
+    
+    fun customRestore(settings: RestorationSettings) {
+        val p = _photo.value ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRestoring = true) }
+            when (val result = repository.restorePhoto(p, settings)) {
                 is RestoreResult.Success -> {
                     loadPhoto(p.id)
                     _uiState.update { it.copy(isRestoring = false) }

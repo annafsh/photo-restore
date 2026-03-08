@@ -37,7 +37,7 @@ object ImageProcessor {
             // Scale down for faster processing
             val maxSize = 1200
             if (bitmap.width > maxSize || bitmap.height > maxSize) {
-                val scale = maxSize.toFloat() / maxOf(bitmap.width, bitmap.height)
+                val scale = maxSize.toFloat() / if (bitmap.width > bitmap.height) bitmap.width.toFloat() else bitmap.height.toFloat()
                 bitmap = Bitmap.createScaledBitmap(
                     bitmap,
                     (bitmap.width * scale).toInt(),
